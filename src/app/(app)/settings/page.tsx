@@ -84,16 +84,33 @@ export default function SettingsPage() {
           ) : null}
           <p className="text-[var(--fg-muted)] mt-3">
             {settings.message ||
-              "For durable Netlify data, run supabase/netlify_setup.sql and set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY. Without keys, DEMO MODE keeps the workflow usable."}
+              "For durable Netlify data, run supabase/migrations/20260811165000_create_app_stores.sql and set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY. Without keys, DEMO MODE keeps the workflow usable."}
           </p>
-          <Button
-            onClick={async () => {
-              await fetch("/api/seed", { method: "POST" });
-              setMessage("Demo data reset.");
-            }}
-          >
-            Reset Demo Data
-          </Button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                const res = await fetch("/api/health");
+                const json = await res.json();
+                const db = json?.data?.database;
+                setMessage(
+                  db?.message ||
+                    json?.data?.warning ||
+                    (json?.ok ? "Database check completed." : "Database check failed.")
+                );
+              }}
+            >
+              Check Database
+            </Button>
+            <Button
+              onClick={async () => {
+                await fetch("/api/seed", { method: "POST" });
+                setMessage("Demo data reset.");
+              }}
+            >
+              Reset Demo Data
+            </Button>
+          </div>
         </Panel>
       </div>
     </div>
