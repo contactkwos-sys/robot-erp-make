@@ -1,0 +1,6 @@
+AI Robot Builder — Demo Project Overview
+
+Project: 4-Wheel AI Inspection Robot
+Purpose: Autonomous visual inspection of factory floors and warehouse aisles
+
+This document is a sample attachment for the Documents module.

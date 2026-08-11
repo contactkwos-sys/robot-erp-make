@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <rect width="640" height="400" fill="#151b24"/>
+  <rect x="40" y="40" width="560" height="320" rx="12" fill="#0d1117" stroke="#2a3544"/>
+  <text x="70" y="100" fill="#e8eef5" font-family="IBM Plex Mono, monospace" font-size="20">PRODUCT SCREENSHOT PLACEHOLDER</text>
+  <text x="70" y="140" fill="#9aa7b8" font-family="IBM Plex Sans, sans-serif" font-size="14">Upload Amazon / Flipkart / supplier screenshots in Product Scanner</text>
+  <text x="70" y="190" fill="#e07a3d" font-family="IBM Plex Mono, monospace" font-size="14">GA25-370 12V Gear Motor</text>
+  <text x="70" y="220" fill="#9aa7b8" font-family="IBM Plex Mono, monospace" font-size="13">Price: ¹320</text>
+  <text x="70" y="250" fill="#9aa7b8" font-family="IBM Plex Mono, monospace" font-size="13">Voltage: 12V · RPM: ~100</text>
+</svg>
