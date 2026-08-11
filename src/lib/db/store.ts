@@ -3,6 +3,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import type { AppStore } from "@/types";
 import { createDemoStore } from "@/lib/db/demo-data";
+import { classifyStoreError } from "@/lib/db/health";
 import {
   createServerSupabaseClient,
   getDataBackend,
@@ -19,6 +20,8 @@ const APP_STORE_TABLE = "app_stores";
 let writeQueue: Promise<void> = Promise.resolve();
 let memoryStore: AppStore | null = null;
 let lastPersistence: "supabase" | "file" | "tmp" | "memory" = "memory";
+let lastStoreWarning: string | null = null;
+let databaseSetupRequired = false;
 
 function emptyStore(): AppStore {
   return {
@@ -121,6 +124,29 @@ async function resolveBackend(): Promise<DataBackend | "tmp"> {
   return "memory";
 }
 
+async function resolveFallbackBackend(): Promise<"local" | "tmp" | "memory"> {
+  if (await canUseLocalFilesystem()) return "local";
+  if (isServerlessRuntime()) {
+    try {
+      const probe = path.join("/tmp", ".ai-robot-builder-write-probe");
+      await fs.writeFile(probe, "ok", "utf8");
+      await fs.unlink(probe);
+      return "tmp";
+    } catch {
+      return "memory";
+    }
+  }
+  return "memory";
+}
+
+function markSetupIssue(error: unknown) {
+  const classified = classifyStoreError(error);
+  lastStoreWarning = classified.message;
+  if (classified.setup_required) {
+    databaseSetupRequired = true;
+  }
+}
+
 async function readFromSupabase(): Promise<AppStore> {
   const client = createServerSupabaseClient();
   if (!client) {
@@ -138,7 +164,7 @@ async function readFromSupabase(): Promise<AppStore> {
 
   if (error) {
     throw new Error(
-      `Supabase read failed (${error.message}). Ensure you ran supabase/schema.sql (app_stores table) and set SUPABASE_SERVICE_ROLE_KEY.`
+      `Supabase read failed (${error.message}). Ensure you ran supabase/migrations/20260811165000_create_app_stores.sql (app_stores table) and set SUPABASE_SERVICE_ROLE_KEY.`
     );
   }
 
@@ -154,12 +180,16 @@ async function readFromSupabase(): Promise<AppStore> {
     );
     if (insertError) {
       throw new Error(
-        `Supabase seed failed (${insertError.message}). Create the app_stores table from supabase/schema.sql.`
+        `Supabase seed failed (${insertError.message}). Create the app_stores table from supabase/migrations/20260811165000_create_app_stores.sql.`
       );
     }
+    databaseSetupRequired = false;
+    lastStoreWarning = null;
     return demo;
   }
 
+  databaseSetupRequired = false;
+  lastStoreWarning = null;
   return data.payload as AppStore;
 }
 
@@ -228,11 +258,31 @@ function writeToMemory(store: AppStore) {
 
 type ResolvedBackend = DataBackend | "tmp";
 
+async function loadFallbackStore(reason: unknown): Promise<{ store: AppStore; backend: ResolvedBackend }> {
+  markSetupIssue(reason);
+  const fallback = await resolveFallbackBackend();
+  if (fallback === "local") {
+    lastPersistence = "file";
+    return { store: await readFromLocal(), backend: "local" };
+  }
+  if (fallback === "tmp") {
+    lastPersistence = "tmp";
+    return { store: await readFromTmp(), backend: "tmp" };
+  }
+  lastPersistence = "memory";
+  return { store: readFromMemory(), backend: "memory" };
+}
+
 async function ensureStore(): Promise<{ store: AppStore; backend: ResolvedBackend }> {
   const backend = await resolveBackend();
   if (backend === "supabase") {
-    lastPersistence = "supabase";
-    return { store: await readFromSupabase(), backend };
+    try {
+      lastPersistence = "supabase";
+      return { store: await readFromSupabase(), backend };
+    } catch (error) {
+      // Keep the dashboard usable when Supabase is misconfigured or tables are missing.
+      return loadFallbackStore(error);
+    }
   }
   if (backend === "local") {
     lastPersistence = "file";
@@ -248,9 +298,18 @@ async function ensureStore(): Promise<{ store: AppStore; backend: ResolvedBacken
 
 async function persist(store: AppStore, backend: ResolvedBackend) {
   if (backend === "supabase") {
-    await writeToSupabase(store);
-    lastPersistence = "supabase";
-    return;
+    try {
+      await writeToSupabase(store);
+      lastPersistence = "supabase";
+      databaseSetupRequired = false;
+      lastStoreWarning = null;
+      return;
+    } catch (error) {
+      markSetupIssue(error);
+      const fallback = await resolveFallbackBackend();
+      await persist(store, fallback);
+      return;
+    }
   }
   if (backend === "local") {
     await writeToLocal(store);
@@ -283,13 +342,32 @@ export async function updateStore(
 export async function resetStore(): Promise<AppStore> {
   const backend = await resolveBackend();
   const demo = createDemoStore();
-  await persist(demo, backend);
+  try {
+    await persist(demo, backend);
+  } catch (error) {
+    markSetupIssue(error);
+    const fallback = await resolveFallbackBackend();
+    await persist(demo, fallback);
+  }
   memoryStore = cloneStore(demo);
   return demo;
 }
 
 export async function getActiveDataBackend(): Promise<DataBackend | "tmp"> {
-  return resolveBackend();
+  // Ensure we have attempted a read so fallback state is accurate.
+  await ensureStore();
+  if (lastPersistence === "file") return "local";
+  if (lastPersistence === "tmp") return "tmp";
+  if (lastPersistence === "memory") return "memory";
+  return "supabase";
+}
+
+export function getStoreWarning() {
+  return lastStoreWarning;
+}
+
+export function isDatabaseSetupRequired() {
+  return databaseSetupRequired;
 }
 
 /** Runtime mode info for UI banners and settings (compatible with Netlify DEMO MODE UI). */
@@ -299,7 +377,7 @@ export function getRuntimeMode() {
   const hasAiKey = Boolean(
     process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GOOGLE_AI_API_KEY
   );
-  const demoMode = !supabaseConfigured || aiProvider === "mock" || !hasAiKey;
+  const demoMode = !supabaseConfigured || aiProvider === "mock" || !hasAiKey || databaseSetupRequired;
 
   return {
     demo_mode: demoMode,
@@ -308,6 +386,8 @@ export function getRuntimeMode() {
     ai_provider: aiProvider,
     supabase_configured: supabaseConfigured,
     serverless: isServerlessRuntime(),
+    database_setup_required: databaseSetupRequired,
+    warning: lastStoreWarning,
   };
 }
 

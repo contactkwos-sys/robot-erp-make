@@ -3,6 +3,8 @@ import {
   getActiveDataBackend,
   getDemoUserId,
   getRuntimeMode,
+  getStoreWarning,
+  isDatabaseSetupRequired,
   nowIso,
   readStore,
   updateStore,
@@ -15,24 +17,29 @@ export async function GET() {
     const store = await readStore();
     const user = store.users.find((u) => u.id === getDemoUserId());
     const mode = getRuntimeMode();
+    const setupRequired = Boolean(mode.database_setup_required || isDatabaseSetupRequired());
     return ok({
       user,
       ...mode,
       backend,
       preferred_backend: getDataBackend(),
       persistence_note:
-        backend === "supabase"
+        backend === "supabase" && !setupRequired
           ? "Using Supabase persistent store."
           : backend === "local"
             ? "Using local JSON file store (development only)."
             : backend === "tmp"
               ? "Using /tmp store on this serverless instance (configure Supabase for durable Netlify data)."
               : "Using in-memory store (data resets on cold start). Configure Supabase for Netlify.",
-      message: mode.demo_mode
-        ? "DEMO MODE — app is fully usable without Supabase or AI API keys."
-        : "Connected mode",
+      message: setupRequired
+        ? "Database setup required — run the app_stores migration, then click Check Database."
+        : mode.demo_mode
+          ? "DEMO MODE — app is fully usable without Supabase or AI API keys."
+          : "Connected mode",
       serverless: isServerlessRuntime(),
       supabase_configured: isSupabaseConfigured(),
+      database_setup_required: setupRequired,
+      warning: getStoreWarning() || mode.warning || null,
     });
   } catch (e) {
     // Never blank the app if settings fail — return safe demo defaults
@@ -44,7 +51,8 @@ export async function GET() {
       ai_provider: "mock",
       supabase_configured: false,
       serverless: true,
-      message: "DEMO MODE — using safe defaults.",
+      database_setup_required: true,
+      message: "Database setup required",
       warning: e instanceof Error ? e.message : "Settings load failed",
     });
   }
