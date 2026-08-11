@@ -43,6 +43,10 @@ next-env.d.ts
 
 # Local app data
 /data/store.json
-/public/uploads/**
-!/public/uploads/**/.gitkeep
+/public/uploads/robots/*
+/public/uploads/scans/*
+/public/uploads/documents/*
+!/public/uploads/robots/.gitkeep
+!/public/uploads/scans/.gitkeep
+!/public/uploads/documents/.gitkeep
 .env.local

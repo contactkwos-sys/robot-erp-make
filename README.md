@@ -2,7 +2,7 @@
 
 **From Robot Idea to Working Machine**
 
-A working full-stack industrial robotics planning application built with Next.js, TypeScript, Tailwind CSS, Zod, and Supabase-ready architecture.
+A working full-stack industrial robotics planning application built with Next.js, TypeScript, Tailwind CSS, Zod, and Supabase.
 
 ## Features
 
@@ -15,7 +15,7 @@ A working full-stack industrial robotics planning application built with Next.js
 - Assembly + wiring guides
 - Engineering safety checks
 - Project costing and progress tracking
-- Project demo: **4-Wheel AI Inspection Robot**
+- Demo project: **4-Wheel AI Inspection Robot**
 - **DEMO MODE** when Supabase / AI keys are not configured
 
 ## Quick start (local)
@@ -30,7 +30,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The homepage (`/`) is the **AI ROBOT BUILDER** dashboard.
 
-Without Supabase/AI keys the app uses an in-memory / local JSON store and the mock AI provider so the full workflow remains usable.
+Locally, without Supabase, the app uses a writable JSON file at `data/store.json`.
 
 ## Production checks
 
@@ -54,21 +54,26 @@ This is a **Next.js** app. Do **not** publish `public/`, `data/`, or the repo ro
 | Publish directory | `.next` (handled by Next.js plugin; do not set `public`) |
 | Node version | `22` (or `20`) |
 
-`netlify.toml` in this repo already configures:
+`netlify.toml` in this repo already configures the Next.js plugin.
 
-- `command = "npm run build"`
-- `publish = ".next"`
-- `@netlify/plugin-nextjs`
+### Persistent data (recommended)
 
-### Environment variables (optional)
+Netlify serverless functions **cannot** reliably write `/var/task/data`. For durable production data, use Supabase:
 
-Set in Netlify → Site configuration → Environment variables:
+1. Create a Supabase project
+2. Run `supabase/netlify_setup.sql` (or full `supabase/schema.sql`)
+3. Create **public** Storage buckets: `robot-images`, `product-scans`, `documents`
+4. Set Netlify env vars:
 
-- `AI_PROVIDER=mock` (default — keeps DEMO MODE)
-- `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` (when ready)
-- `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GOOGLE_AI_API_KEY` (optional)
+| Variable | Required for durable data |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes |
+| `AI_PROVIDER` | Optional (`mock` default) |
+| AI API keys | Optional |
 
-If these are missing, the app still opens normally in **DEMO MODE**.
+Without Supabase the app still opens in **DEMO MODE** using `/tmp` or in-memory storage (data may reset on cold start).
 
 ### Connect correctly
 
@@ -77,24 +82,18 @@ If these are missing, the app still opens normally in **DEMO MODE**.
 3. Deploy
 4. Open the Netlify URL — you must see **AI ROBOT BUILDER**, not a file browser
 
+## Data backends
+
+| Backend | When used |
+|---|---|
+| **supabase** | Supabase env vars are set (durable Netlify/production) |
+| **local** | Local dev with writable disk |
+| **tmp** | Serverless without Supabase, `/tmp` writable |
+| **memory** | Last-resort serverless fallback |
+
 ## Environment
 
-See `.env.example` for:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`
-- `GOOGLE_AI_API_KEY`
-- `AI_PROVIDER` (`mock` | `claude` | `openai` | `gemini`)
-
-## Supabase
-
-1. Create a project
-2. Run `supabase/schema.sql` in the SQL editor
-3. Create storage buckets: `robot-images`, `product-scans`, `documents`
-4. Fill Supabase env vars
+See `.env.example`.
 
 ## Scripts
 

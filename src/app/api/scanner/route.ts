@@ -2,7 +2,7 @@ import { ok, fail } from "@/lib/api";
 import { getAIProvider } from "@/lib/ai";
 import { getDemoUserId, newId, nowIso, readStore, updateStore } from "@/lib/db/store";
 import { validateUpload } from "@/lib/validations";
-import { saveUpload } from "@/lib/uploads";
+import { saveUpload } from "@/lib/storage/uploads";
 
 export async function GET() {
   const store = await readStore();
@@ -21,14 +21,13 @@ export async function POST(request: Request) {
     const check = validateUpload(file);
     if (!check.ok) return fail(check.error);
 
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const saved = await saveUpload(bytes, "scans", file.name, file.type);
+    const uploaded = await saveUpload("scans", file);
 
     const ai = getAIProvider();
     let extraction;
     try {
       extraction = await ai.analyzeProductScreenshot({
-        imageUrl: saved.file_path,
+        imageUrl: uploaded.file_path,
         fileName: file.name,
         notes: String(form.get("notes") || ""),
       });
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
         id,
         user_id: getDemoUserId(),
         file_name: file.name,
-        file_path: saved.file_path,
+        file_path: uploaded.file_path,
         file_type: file.type,
         extracted_data: extraction.data,
         provider: extraction.provider,
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
 
     return ok({
       scan_id: id,
-      file_path: saved.file_path,
+      file_path: uploaded.file_path,
       extracted: extraction.data,
       warnings: extraction.warnings,
       provider: extraction.provider,

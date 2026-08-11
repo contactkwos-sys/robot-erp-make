@@ -1,7 +1,7 @@
 import { ok, fail } from "@/lib/api";
 import { getDemoUserId, newId, nowIso, readStore, updateStore } from "@/lib/db/store";
 import { validateUpload } from "@/lib/validations";
-import { saveUpload } from "@/lib/uploads";
+import { saveUpload } from "@/lib/storage/uploads";
 
 export async function GET() {
   const store = await readStore();
@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     if (!(file instanceof File)) return fail("No file uploaded");
     const check = validateUpload(file);
     if (!check.ok) return fail(check.error);
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const saved = await saveUpload(bytes, "documents", file.name, file.type);
+
+    const uploaded = await saveUpload("documents", file);
     const id = newId();
     await updateStore((store) => {
       store.documents.push({
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         user_id: getDemoUserId(),
         title: String(form.get("title") || file.name),
         file_name: file.name,
-        file_path: saved.file_path,
+        file_path: uploaded.file_path,
         file_type: file.type,
         file_size: file.size,
         entity_type: (String(form.get("entity_type") || "general") as

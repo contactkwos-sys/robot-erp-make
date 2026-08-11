@@ -76,11 +76,15 @@ export default function SettingsPage() {
           </div>
           <div>
             Supabase configured:{" "}
-            <strong>{settings.supabase_configured ? "Yes" : "No (local / demo store)"}</strong>
+            <strong>{settings.supabase_configured ? "Yes" : "No"}</strong>
           </div>
+          {settings.serverless ? <div>Runtime: <strong>serverless</strong></div> : null}
+          {settings.persistence_note ? (
+            <p className="text-[var(--fg-muted)] mt-2">{settings.persistence_note}</p>
+          ) : null}
           <p className="text-[var(--fg-muted)] mt-3">
             {settings.message ||
-              "Copy .env.example to .env.local and set Supabase + AI keys for production. Without keys, DEMO MODE keeps the full workflow usable."}
+              "For durable Netlify data, run supabase/netlify_setup.sql and set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY. Without keys, DEMO MODE keeps the workflow usable."}
           </p>
           <Button
             onClick={async () => {

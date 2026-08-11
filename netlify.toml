@@ -4,7 +4,7 @@
 
 [build]
   command = "npm run build"
-  # OpenNext / @netlify/plugin-nextjs manages the publish output for Next.js.
+  # @netlify/plugin-nextjs manages the publish output for Next.js.
   publish = ".next"
 
 [build.environment]
@@ -16,10 +16,14 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+[functions]
+  # Next.js API routes need Node (not Edge) for Supabase service-role access.
+  node_bundler = "esbuild"
+
 # Optional Netlify env vars (set in Site settings → Environment variables):
 #   NEXT_PUBLIC_SUPABASE_URL
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY
-#   SUPABASE_SERVICE_ROLE_KEY
+#   SUPABASE_SERVICE_ROLE_KEY   (required for durable Netlify persistence)
 #   ANTHROPIC_API_KEY / OPENAI_API_KEY / GOOGLE_AI_API_KEY
 #   AI_PROVIDER (mock | claude | openai | gemini)
-# Without Supabase/AI keys the app runs in DEMO MODE with local in-memory data.
+# Without Supabase the app still opens in DEMO MODE (/tmp or in-memory).
