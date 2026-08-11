@@ -1,0 +1,25 @@
+# AI Robot Builder — Netlify Next.js deployment
+# CRITICAL: Do NOT set Publish directory to "public", "data", or the repo root.
+# Those settings serve a static file listing ("data - Zero KB", "Open in...") instead of the app.
+
+[build]
+  command = "npm run build"
+  # OpenNext / @netlify/plugin-nextjs manages the publish output for Next.js.
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Safe defaults so the site boots without secrets
+  AI_PROVIDER = "mock"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Optional Netlify env vars (set in Site settings → Environment variables):
+#   NEXT_PUBLIC_SUPABASE_URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   SUPABASE_SERVICE_ROLE_KEY
+#   ANTHROPIC_API_KEY / OPENAI_API_KEY / GOOGLE_AI_API_KEY
+#   AI_PROVIDER (mock | claude | openai | gemini)
+# Without Supabase/AI keys the app runs in DEMO MODE with local in-memory data.

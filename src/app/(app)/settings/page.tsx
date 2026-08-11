@@ -61,12 +61,26 @@ export default function SettingsPage() {
           {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
         </Panel>
         <Panel className="space-y-2 text-sm">
-          <div>Data backend: <strong>{settings.backend}</strong></div>
-          <div>AI provider: <strong>{settings.ai_provider}</strong></div>
-          <div>Supabase configured: <strong>{settings.supabase_configured ? "Yes" : "No (local JSON store)"}</strong></div>
+          <div>
+            Mode:{" "}
+            <strong>{settings.demo_mode ? "DEMO MODE" : "Connected"}</strong>
+          </div>
+          <div>
+            Data backend: <strong>{settings.backend}</strong>
+          </div>
+          <div>
+            Persistence: <strong>{settings.persistence || "n/a"}</strong>
+          </div>
+          <div>
+            AI provider: <strong>{settings.ai_provider}</strong>
+          </div>
+          <div>
+            Supabase configured:{" "}
+            <strong>{settings.supabase_configured ? "Yes" : "No (local / demo store)"}</strong>
+          </div>
           <p className="text-[var(--fg-muted)] mt-3">
-            Copy <code>.env.example</code> to <code>.env.local</code> and set Supabase + AI keys for production.
-            Without keys, the mock AI provider keeps the full workflow usable.
+            {settings.message ||
+              "Copy .env.example to .env.local and set Supabase + AI keys for production. Without keys, DEMO MODE keeps the full workflow usable."}
           </p>
           <Button
             onClick={async () => {

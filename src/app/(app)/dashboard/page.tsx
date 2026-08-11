@@ -17,9 +17,99 @@ import {
   StatCard,
   StatusBadge,
 } from "@/components/ui/primitives";
+import {
+  Bot,
+  PlusSquare,
+  ScanSearch,
+  Boxes,
+  Warehouse,
+  Camera,
+  ShoppingCart,
+  GitCompare,
+  Wrench,
+  Cable,
+  Calculator,
+} from "lucide-react";
+
+const MODULES = [
+  {
+    href: "/robots",
+    title: "My Robots",
+    body: "Browse and manage robot projects.",
+    icon: Bot,
+  },
+  {
+    href: "/robots/create",
+    title: "Create New Robot",
+    body: "Start a new build from idea to machine.",
+    icon: PlusSquare,
+  },
+  {
+    href: "/analysis",
+    title: "Robot Analysis",
+    body: "AI breakdown of systems and requirements.",
+    icon: ScanSearch,
+  },
+  {
+    href: "/bom",
+    title: "BOM / Components",
+    body: "Bill of materials and part specifications.",
+    icon: Boxes,
+  },
+  {
+    href: "/inventory",
+    title: "Inventory",
+    body: "Stock levels, reservations, and shortages.",
+    icon: Warehouse,
+  },
+  {
+    href: "/scanner",
+    title: "Product Scanner",
+    body: "Extract product data from screenshots.",
+    icon: Camera,
+  },
+  {
+    href: "/purchases",
+    title: "Purchase Required",
+    body: "Buy only the missing quantities.",
+    icon: ShoppingCart,
+  },
+  {
+    href: "/comparison",
+    title: "Product Comparison",
+    body: "Compare candidate parts side by side.",
+    icon: GitCompare,
+  },
+  {
+    href: "/assembly",
+    title: "Assembly Guide",
+    body: "Step-by-step mechanical assembly.",
+    icon: Wrench,
+  },
+  {
+    href: "/wiring",
+    title: "Wiring Guide",
+    body: "Connections, polarity, and pinouts.",
+    icon: Cable,
+  },
+  {
+    href: "/costing",
+    title: "Costing",
+    body: "Project cost rollups and estimates.",
+    icon: Calculator,
+  },
+];
+
+type RuntimeSettings = {
+  demo_mode?: boolean;
+  backend?: string;
+  ai_provider?: string;
+  message?: string;
+};
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [runtime, setRuntime] = useState<RuntimeSettings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,7 +117,15 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      setStats(await apiGet<DashboardStats>("/api/dashboard"));
+      const [dash, settings] = await Promise.all([
+        apiGet<DashboardStats>("/api/dashboard"),
+        apiGet<RuntimeSettings>("/api/settings").catch(() => ({
+          demo_mode: true,
+          message: "DEMO MODE",
+        })),
+      ]);
+      setStats(dash);
+      setRuntime(settings);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load dashboard");
     } finally {
@@ -41,13 +139,43 @@ export default function DashboardPage() {
 
   if (loading) return <LoadingState label="Loading dashboard…" />;
   if (error) return <ErrorState message={error} onRetry={load} />;
-  if (!stats) return <EmptyState title="No data" body="Seed the demo project to get started." />;
+  if (!stats) {
+    return (
+      <EmptyState
+        title="No data"
+        body="Seed the demo project to get started."
+        action={
+          <Button
+            variant="primary"
+            onClick={async () => {
+              await fetch("/api/seed", { method: "POST" });
+              load();
+            }}
+          >
+            Load Demo Data
+          </Button>
+        }
+      />
+    );
+  }
 
   return (
     <div>
+      {runtime?.demo_mode ? (
+        <div className="mb-4 rounded-lg border border-[color-mix(in_oklab,var(--accent)_45%,var(--border))] bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] px-4 py-3 text-sm animate-fade-up">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="accent">DEMO MODE</Badge>
+            <span>
+              {runtime.message ||
+                "Running without Supabase / AI keys. Full workflow uses local demo data and mock AI."}
+            </span>
+          </div>
+        </div>
+      ) : null}
+
       <PageHeader
-        title="Dashboard"
-        subtitle="Operational overview of robot projects, inventory health, and procurement."
+        title="AI ROBOT BUILDER"
+        subtitle="From Robot Idea to Working Machine — operational dashboard for projects, inventory, and procurement."
         actions={
           <>
             <Link href="/robots/create">
@@ -64,6 +192,29 @@ export default function DashboardPage() {
           </>
         }
       />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {MODULES.map((mod) => {
+          const Icon = mod.icon;
+          return (
+            <Link
+              key={mod.href}
+              href={mod.href}
+              className="group panel rounded-xl p-4 transition hover:-translate-y-0.5 hover:border-[color-mix(in_oklab,var(--accent)_50%,var(--border))]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="rounded-md border border-[var(--border)] bg-[var(--bg-muted)] p-2 text-[var(--accent)] transition group-hover:border-[color-mix(in_oklab,var(--accent)_40%,var(--border))]">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <div className="font-semibold">{mod.title}</div>
+                  <p className="mt-1 text-xs text-[var(--fg-muted)]">{mod.body}</p>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total Robot Projects" value={stats.total_projects} />
