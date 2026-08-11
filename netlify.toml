@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[functions]
+  # Next.js API routes need Node (not Edge) for Supabase service-role access.
+  node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "22"

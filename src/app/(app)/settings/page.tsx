@@ -63,10 +63,18 @@ export default function SettingsPage() {
         <Panel className="space-y-2 text-sm">
           <div>Data backend: <strong>{settings.backend}</strong></div>
           <div>AI provider: <strong>{settings.ai_provider}</strong></div>
-          <div>Supabase configured: <strong>{settings.supabase_configured ? "Yes" : "No (local JSON store)"}</strong></div>
+          <div>
+            Supabase configured:{" "}
+            <strong>{settings.supabase_configured ? "Yes" : "No"}</strong>
+          </div>
+          {settings.serverless ? <div>Runtime: <strong>serverless</strong></div> : null}
+          {settings.persistence_note ? (
+            <p className="text-[var(--fg-muted)] mt-2">{settings.persistence_note}</p>
+          ) : null}
           <p className="text-[var(--fg-muted)] mt-3">
-            Copy <code>.env.example</code> to <code>.env.local</code> and set Supabase + AI keys for production.
-            Without keys, the mock AI provider keeps the full workflow usable.
+            Netlify/production requires Supabase. Run <code>supabase/netlify_setup.sql</code>, create
+            storage buckets, and set <code>NEXT_PUBLIC_SUPABASE_URL</code>,{" "}
+            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, and <code>SUPABASE_SERVICE_ROLE_KEY</code>.
           </p>
           <Button
             onClick={async () => {

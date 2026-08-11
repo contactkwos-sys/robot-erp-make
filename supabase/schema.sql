@@ -1,7 +1,31 @@
 -- AI Robot Builder — Supabase PostgreSQL schema
 -- Run in Supabase SQL editor. Enables RLS so users only access their own data.
+--
+-- REQUIRED for Netlify/production (persistent store, no local filesystem):
+--   1) Run this SQL (at minimum the app_stores section below)
+--   2) Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+--   3) Create public storage buckets: robot-images, product-scans, documents
 
 create extension if not exists "pgcrypto";
+
+-- ---------------------------------------------------------------------------
+-- Persistent application document store (used by Netlify / serverless)
+-- ---------------------------------------------------------------------------
+create table if not exists public.app_stores (
+  owner_key text primary key,
+  payload jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_stores enable row level security;
+
+-- Authenticated users can manage their own document store row.
+-- Server-side Netlify functions should use SUPABASE_SERVICE_ROLE_KEY (bypasses RLS).
+drop policy if exists app_stores_own on public.app_stores;
+create policy app_stores_own on public.app_stores
+  for all
+  using (auth.uid()::text = owner_key)
+  with check (auth.uid()::text = owner_key);
 
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,

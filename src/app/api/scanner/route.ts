@@ -2,8 +2,7 @@ import { ok, fail } from "@/lib/api";
 import { getAIProvider } from "@/lib/ai";
 import { getDemoUserId, newId, nowIso, readStore, updateStore } from "@/lib/db/store";
 import { validateUpload } from "@/lib/validations";
-import { promises as fs } from "fs";
-import path from "path";
+import { saveUpload } from "@/lib/storage/uploads";
 
 export async function GET() {
   const store = await readStore();
@@ -22,18 +21,13 @@ export async function POST(request: Request) {
     const check = validateUpload(file);
     if (!check.ok) return fail(check.error);
 
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const rel = `/uploads/scans/${safeName}`;
-    const abs = path.join(process.cwd(), "public", "uploads", "scans", safeName);
-    await fs.mkdir(path.dirname(abs), { recursive: true });
-    await fs.writeFile(abs, bytes);
+    const uploaded = await saveUpload("scans", file);
 
     const ai = getAIProvider();
     let extraction;
     try {
       extraction = await ai.analyzeProductScreenshot({
-        imageUrl: rel,
+        imageUrl: uploaded.file_path,
         fileName: file.name,
         notes: String(form.get("notes") || ""),
       });
@@ -47,7 +41,7 @@ export async function POST(request: Request) {
         id,
         user_id: getDemoUserId(),
         file_name: file.name,
-        file_path: rel,
+        file_path: uploaded.file_path,
         file_type: file.type,
         extracted_data: extraction.data,
         provider: extraction.provider,
@@ -59,7 +53,7 @@ export async function POST(request: Request) {
 
     return ok({
       scan_id: id,
-      file_path: rel,
+      file_path: uploaded.file_path,
       extracted: extraction.data,
       warnings: extraction.warnings,
       provider: extraction.provider,

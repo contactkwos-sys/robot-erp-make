@@ -2,7 +2,7 @@
 
 **From Robot Idea to Working Machine**
 
-A working full-stack industrial robotics planning application built with Next.js, TypeScript, Tailwind CSS, Zod, and Supabase-ready architecture.
+A working full-stack industrial robotics planning application built with Next.js, TypeScript, Tailwind CSS, Zod, and Supabase.
 
 ## Features
 
@@ -17,7 +17,7 @@ A working full-stack industrial robotics planning application built with Next.js
 - Project costing and progress tracking
 - Demo project: **4-Wheel AI Inspection Robot**
 
-## Quick start
+## Quick start (local)
 
 ```bash
 npm install
@@ -27,26 +27,40 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Without Supabase/AI keys the app uses a local JSON store (`data/store.json`) and the mock AI provider so the full workflow remains usable.
+Locally, without Supabase, the app uses a writable JSON file at `data/store.json`.
+
+## Netlify / production (required)
+
+Netlify serverless functions **cannot** create `/var/task/data`. Production must use Supabase.
+
+1. Create a Supabase project
+2. Run `supabase/netlify_setup.sql` (or full `supabase/schema.sql`) in the SQL editor
+3. Create **public** Storage buckets: `robot-images`, `product-scans`, `documents`
+4. In Netlify → Site settings → Environment variables, set:
+
+| Variable | Required |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes (server-side reads/writes) |
+| `AI_PROVIDER` | Optional (`mock` default) |
+| AI API keys | Optional |
+
+5. Redeploy
+
+`netlify.toml` is included for `@netlify/plugin-nextjs`.
+
+## Data backends
+
+| Backend | When used |
+|---|---|
+| **supabase** | Supabase env vars are set (Netlify/production) |
+| **local** | Local dev with writable disk |
+| **memory** | Serverless without Supabase (no crash, but data resets) |
 
 ## Environment
 
-See `.env.example` for:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`
-- `GOOGLE_AI_API_KEY`
-- `AI_PROVIDER` (`mock` | `claude` | `openai` | `gemini`)
-
-## Supabase
-
-1. Create a project
-2. Run `supabase/schema.sql` in the SQL editor
-3. Create storage buckets: `robot-images`, `product-scans`, `documents`
-4. Fill Supabase env vars
+See `.env.example`.
 
 ## Scripts
 
