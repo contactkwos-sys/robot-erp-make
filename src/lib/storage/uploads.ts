@@ -1,6 +1,10 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { createServerSupabaseClient, getDataBackend, isServerlessRuntime } from "@/lib/supabase/client";
+import {
+  createServerSupabaseClient,
+  getDataBackend,
+  isServerlessRuntime,
+} from "@/lib/supabase/client";
 
 const FOLDER_TO_BUCKET: Record<string, string> = {
   robots: "robot-images",
@@ -13,7 +17,7 @@ export type UploadResult = {
   file_path: string;
   file_type: string;
   file_size: number;
-  storage: "supabase" | "local";
+  storage: "supabase" | "local" | "data-url";
 };
 
 function safeFileName(name: string) {
@@ -61,12 +65,6 @@ async function uploadToLocal(
   file: File,
   bytes: Buffer
 ): Promise<UploadResult> {
-  if (isServerlessRuntime() || getDataBackend() !== "local") {
-    throw new Error(
-      "Local disk uploads are unavailable on Netlify. Configure Supabase Storage for production file uploads."
-    );
-  }
-
   const name = safeFileName(file.name);
   const rel = `/uploads/${folder}/${name}`;
   const abs = path.join(process.cwd(), "public", "uploads", folder, name);
@@ -82,6 +80,22 @@ async function uploadToLocal(
   };
 }
 
+function uploadAsDataUrl(file: File, bytes: Buffer): UploadResult {
+  return {
+    file_name: file.name,
+    file_path: `data:${file.type || "application/octet-stream"};base64,${bytes.toString("base64")}`,
+    file_type: file.type,
+    file_size: file.size,
+    storage: "data-url",
+  };
+}
+
+/**
+ * Save an upload with this priority:
+ * 1) Supabase Storage (production/Netlify when configured)
+ * 2) Local public/uploads (writable dev machines)
+ * 3) Data URL fallback (serverless without Supabase — demo still works)
+ */
 export async function saveUpload(folder: string, file: File): Promise<UploadResult> {
   const allowed = new Set(["robots", "scans", "documents"]);
   if (!allowed.has(folder)) {
@@ -89,8 +103,29 @@ export async function saveUpload(folder: string, file: File): Promise<UploadResu
   }
 
   const bytes = Buffer.from(await file.arrayBuffer());
+
   if (getDataBackend() === "supabase") {
     return uploadToSupabase(folder, file, bytes);
   }
-  return uploadToLocal(folder, file, bytes);
+
+  if (!isServerlessRuntime()) {
+    try {
+      return await uploadToLocal(folder, file, bytes);
+    } catch {
+      return uploadAsDataUrl(file, bytes);
+    }
+  }
+
+  return uploadAsDataUrl(file, bytes);
+}
+
+/** Compatibility wrapper for callers that pass raw bytes (from main-branch API). */
+export async function saveUploadBytes(
+  bytes: Buffer,
+  folder: string,
+  originalName: string,
+  mimeType: string
+): Promise<UploadResult> {
+  const file = new File([Uint8Array.from(bytes)], originalName, { type: mimeType });
+  return saveUpload(folder, file);
 }

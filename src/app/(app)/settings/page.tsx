@@ -61,8 +61,19 @@ export default function SettingsPage() {
           {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
         </Panel>
         <Panel className="space-y-2 text-sm">
-          <div>Data backend: <strong>{settings.backend}</strong></div>
-          <div>AI provider: <strong>{settings.ai_provider}</strong></div>
+          <div>
+            Mode:{" "}
+            <strong>{settings.demo_mode ? "DEMO MODE" : "Connected"}</strong>
+          </div>
+          <div>
+            Data backend: <strong>{settings.backend}</strong>
+          </div>
+          <div>
+            Persistence: <strong>{settings.persistence || "n/a"}</strong>
+          </div>
+          <div>
+            AI provider: <strong>{settings.ai_provider}</strong>
+          </div>
           <div>
             Supabase configured:{" "}
             <strong>{settings.supabase_configured ? "Yes" : "No"}</strong>
@@ -72,9 +83,8 @@ export default function SettingsPage() {
             <p className="text-[var(--fg-muted)] mt-2">{settings.persistence_note}</p>
           ) : null}
           <p className="text-[var(--fg-muted)] mt-3">
-            Netlify/production requires Supabase. Run <code>supabase/netlify_setup.sql</code>, create
-            storage buckets, and set <code>NEXT_PUBLIC_SUPABASE_URL</code>,{" "}
-            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, and <code>SUPABASE_SERVICE_ROLE_KEY</code>.
+            {settings.message ||
+              "For durable Netlify data, run supabase/netlify_setup.sql and set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY. Without keys, DEMO MODE keeps the workflow usable."}
           </p>
           <Button
             onClick={async () => {

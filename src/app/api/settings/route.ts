@@ -2,6 +2,7 @@ import { ok, fail, parseJson } from "@/lib/api";
 import {
   getActiveDataBackend,
   getDemoUserId,
+  getRuntimeMode,
   nowIso,
   readStore,
   updateStore,
@@ -13,22 +14,39 @@ export async function GET() {
     const backend = await getActiveDataBackend();
     const store = await readStore();
     const user = store.users.find((u) => u.id === getDemoUserId());
+    const mode = getRuntimeMode();
     return ok({
       user,
+      ...mode,
       backend,
       preferred_backend: getDataBackend(),
-      ai_provider: process.env.AI_PROVIDER || "mock",
-      supabase_configured: isSupabaseConfigured(),
-      serverless: isServerlessRuntime(),
       persistence_note:
         backend === "supabase"
           ? "Using Supabase persistent store."
           : backend === "local"
             ? "Using local JSON file store (development only)."
-            : "Using in-memory store (data resets on cold start). Configure Supabase for Netlify.",
+            : backend === "tmp"
+              ? "Using /tmp store on this serverless instance (configure Supabase for durable Netlify data)."
+              : "Using in-memory store (data resets on cold start). Configure Supabase for Netlify.",
+      message: mode.demo_mode
+        ? "DEMO MODE — app is fully usable without Supabase or AI API keys."
+        : "Connected mode",
+      serverless: isServerlessRuntime(),
+      supabase_configured: isSupabaseConfigured(),
     });
   } catch (e) {
-    return fail(e instanceof Error ? e.message : "Failed to load settings", 500);
+    // Never blank the app if settings fail — return safe demo defaults
+    return ok({
+      user: null,
+      demo_mode: true,
+      backend: "memory",
+      persistence: "memory",
+      ai_provider: "mock",
+      supabase_configured: false,
+      serverless: true,
+      message: "DEMO MODE — using safe defaults.",
+      warning: e instanceof Error ? e.message : "Settings load failed",
+    });
   }
 }
 
