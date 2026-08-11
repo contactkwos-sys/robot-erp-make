@@ -105,6 +105,8 @@ type RuntimeSettings = {
   backend?: string;
   ai_provider?: string;
   message?: string;
+  database_setup_required?: boolean;
+  warning?: string | null;
 };
 
 export default function DashboardPage() {
@@ -112,6 +114,28 @@ export default function DashboardPage() {
   const [runtime, setRuntime] = useState<RuntimeSettings | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [healthMessage, setHealthMessage] = useState<string | null>(null);
+
+  const checkDatabase = async () => {
+    try {
+      const health = await apiGet<{
+        status?: string;
+        warning?: string | null;
+        database?: { message?: string; setup_required?: boolean };
+      }>("/api/health");
+      const msg =
+        health.database?.message ||
+        health.warning ||
+        (health.status === "ok" ? "Database healthy." : "Database check completed.");
+      setHealthMessage(msg);
+      if (!health.database?.setup_required && health.status === "ok") {
+        setError(null);
+        await load();
+      }
+    } catch (e) {
+      setHealthMessage(e instanceof Error ? e.message : "Database check failed");
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -119,13 +143,20 @@ export default function DashboardPage() {
     try {
       const [dash, settings] = await Promise.all([
         apiGet<DashboardStats>("/api/dashboard"),
-        apiGet<RuntimeSettings>("/api/settings").catch(() => ({
-          demo_mode: true,
-          message: "DEMO MODE",
-        })),
+        apiGet<RuntimeSettings>("/api/settings").catch(
+          (): RuntimeSettings => ({
+            demo_mode: true,
+            message: "DEMO MODE",
+            database_setup_required: false,
+            warning: null,
+          })
+        ),
       ]);
       setStats(dash);
       setRuntime(settings);
+      if (settings.database_setup_required) {
+        setError(settings.warning || settings.message || "Database setup required");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load dashboard");
     } finally {
@@ -138,7 +169,9 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) return <LoadingState label="Loading dashboard…" />;
-  if (error) return <ErrorState message={error} onRetry={load} />;
+  if (error && !stats) {
+    return <ErrorState message={error} onRetry={load} onCheckDatabase={checkDatabase} />;
+  }
   if (!stats) {
     return (
       <EmptyState
@@ -161,7 +194,18 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {runtime?.demo_mode ? (
+      {runtime?.database_setup_required || error ? (
+        <div className="mb-4">
+          <ErrorState
+            message={error || runtime?.warning || runtime?.message || "Database setup required"}
+            onRetry={load}
+            onCheckDatabase={checkDatabase}
+          />
+          {healthMessage ? (
+            <p className="mt-2 text-xs text-[var(--fg-muted)]">{healthMessage}</p>
+          ) : null}
+        </div>
+      ) : runtime?.demo_mode ? (
         <div className="mb-4 rounded-lg border border-[color-mix(in_oklab,var(--accent)_45%,var(--border))] bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] px-4 py-3 text-sm animate-fade-up">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="accent">DEMO MODE</Badge>

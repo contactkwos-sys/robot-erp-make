@@ -10,12 +10,21 @@ create extension if not exists "pgcrypto";
 
 -- ---------------------------------------------------------------------------
 -- Persistent application document store (used by Netlify / serverless)
+-- Preferred migration path: supabase/migrations/20260811165000_create_app_stores.sql
 -- ---------------------------------------------------------------------------
 create table if not exists public.app_stores (
   owner_key text primary key,
   payload jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint app_stores_payload_is_object check (jsonb_typeof(payload) = 'object')
 );
+
+create index if not exists idx_app_stores_updated_at
+  on public.app_stores (updated_at desc);
+
+create index if not exists idx_app_stores_payload_gin
+  on public.app_stores using gin (payload jsonb_path_ops);
 
 alter table public.app_stores enable row level security;
 
@@ -26,6 +35,11 @@ create policy app_stores_own on public.app_stores
   for all
   using (auth.uid()::text = owner_key)
   with check (auth.uid()::text = owner_key);
+
+grant usage on schema public to anon, authenticated, service_role;
+grant select, insert, update, delete on table public.app_stores to authenticated, service_role;
+grant select on table public.app_stores to anon;
+notify pgrst, 'reload schema';
 
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,

@@ -61,7 +61,7 @@ This is a **Next.js** app. Do **not** publish `public/`, `data/`, or the repo ro
 Netlify serverless functions **cannot** reliably write `/var/task/data`. For durable production data, use Supabase:
 
 1. Create a Supabase project
-2. Run `supabase/netlify_setup.sql` (or full `supabase/schema.sql`)
+2. Run migration `supabase/migrations/20260811165000_create_app_stores.sql` (or `supabase/netlify_setup.sql` / full `supabase/schema.sql`)
 3. Create **public** Storage buckets: `robot-images`, `product-scans`, `documents`
 4. Set Netlify env vars:
 
@@ -72,6 +72,8 @@ Netlify serverless functions **cannot** reliably write `/var/task/data`. For dur
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes |
 | `AI_PROVIDER` | Optional (`mock` default) |
 | AI API keys | Optional |
+
+5. Confirm `/api/health` reports `database_setup_required: false` and `app_stores` present
 
 Without Supabase the app still opens in **DEMO MODE** using `/tmp` or in-memory storage (data may reset on cold start).
 

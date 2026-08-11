@@ -118,7 +118,61 @@ export function EmptyState({ title, body, action }: { title: string; body: strin
   );
 }
 
-export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+function isDatabaseSetupMessage(message: string) {
+  const m = message.toLowerCase();
+  return (
+    m.includes("database setup required") ||
+    m.includes("app_stores") ||
+    m.includes("schema cache") ||
+    m.includes("supabase read failed") ||
+    m.includes("supabase seed failed")
+  );
+}
+
+export function ErrorState({
+  message,
+  onRetry,
+  onCheckDatabase,
+}: {
+  message: string;
+  onRetry?: () => void;
+  onCheckDatabase?: () => void;
+}) {
+  const setupRequired = isDatabaseSetupMessage(message);
+
+  if (setupRequired) {
+    return (
+      <Panel className="border-[color-mix(in_oklab,var(--warning)_45%,var(--border))]">
+        <div className="font-semibold text-[var(--warning)]">Database setup required</div>
+        <p className="mt-1 text-sm text-[var(--fg-muted)]">
+          {message ||
+            "Could not reach the required Supabase tables. Run the app_stores migration, then retry."}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {onCheckDatabase ? (
+            <Button variant="secondary" onClick={onCheckDatabase}>
+              Check Database
+            </Button>
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                window.location.href = "/api/health";
+              }}
+            >
+              Check Database
+            </Button>
+          )}
+          {onRetry ? (
+            <Button onClick={onRetry}>
+              Retry
+            </Button>
+          ) : null}
+        </div>
+      </Panel>
+    );
+  }
+
   return (
     <Panel className="border-[color-mix(in_oklab,var(--danger)_45%,var(--border))]">
       <div className="font-semibold text-[var(--danger)]">Something went wrong</div>
