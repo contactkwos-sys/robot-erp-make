@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Bot,
@@ -28,7 +28,7 @@ import { useAppSettings } from "@/contexts/app-settings";
 import { Button, Input } from "@/components/ui/primitives";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, match: ["/","/dashboard"] as string[] },
   { href: "/robots", label: "My Robots", icon: Bot },
   { href: "/robots/create", label: "Create Robot", icon: PlusSquare },
   { href: "/analysis", label: "Robot Analysis", icon: ScanSearch },
@@ -50,7 +50,10 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="space-y-1 px-3 pb-6">
       {NAV.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(item.href + "/");
+        const matchPaths = "match" in item && item.match ? item.match : [item.href];
+        const active = matchPaths.some(
+          (p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/"))
+        );
         const Icon = item.icon;
         return (
           <Link
@@ -77,7 +80,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Record<string, unknown[]> | null>(null);
+  const [demoMode, setDemoMode] = useState(true);
   const { beginnerMode, setBeginnerMode } = useAppSettings();
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json?.ok && typeof json.data?.demo_mode === "boolean") {
+          setDemoMode(json.data.demo_mode);
+        }
+      })
+      .catch(() => setDemoMode(true));
+  }, []);
 
   const runSearch = async (value: string) => {
     setQuery(value);
@@ -94,8 +109,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex">
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-[var(--sidebar)] text-[var(--sidebar-fg)] border-r border-black/20">
         <div className="px-5 py-5 border-b border-white/10">
-          <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--sidebar-muted)]">
-            Industrial Suite
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--sidebar-muted)]">
+              Industrial Suite
+            </div>
+            {demoMode ? (
+              <span className="rounded border border-[color-mix(in_oklab,var(--accent)_50%,transparent)] px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-[var(--accent)]">
+                Demo
+              </span>
+            ) : null}
           </div>
           <div className="mt-1 text-lg font-semibold leading-tight" style={{ fontFamily: "var(--font-display)" }}>
             AI ROBOT BUILDER
