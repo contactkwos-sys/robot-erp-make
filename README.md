@@ -16,6 +16,10 @@ A working full-stack industrial robotics planning application built with Next.js
 - Engineering safety checks
 - Project costing and progress tracking
 - Demo project: **4-Wheel AI Inspection Robot**
+- **Robot Plan chart flow** (Hinglish): idea → image → stock → missing → 3D print → code → finish
+- Hindi + English language toggle
+- Mark inventory items as **USED** (इस्तेमाल)
+- Storage bucket health + auto-ensure (`robot-images`, `product-scans`, `documents`)
 - **DEMO MODE** when Supabase / AI keys are not configured
 
 ## Quick start (local)
@@ -62,7 +66,7 @@ Netlify serverless functions **cannot** reliably write `/var/task/data`. For dur
 
 1. Create a Supabase project
 2. Run migration `supabase/migrations/20260811165000_create_app_stores.sql` (or `supabase/netlify_setup.sql` / full `supabase/schema.sql`)
-3. Create **public** Storage buckets: `robot-images`, `product-scans`, `documents`
+3. Create **public** Storage buckets: run `supabase/migrations/20260812234000_create_storage_buckets.sql` (or click **Ensure Storage Buckets** in Settings / Robot Plan)
 4. Set Netlify env vars:
 
 | Variable | Required for durable data |

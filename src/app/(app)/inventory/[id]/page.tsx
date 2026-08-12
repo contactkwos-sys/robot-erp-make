@@ -57,8 +57,10 @@ export default function InventoryDetailPage() {
           <h3 className="font-semibold mb-3">Record Transaction</h3>
           <div className="space-y-2">
             <Select value={tx.transaction_type} onChange={(e) => setTx({ ...tx, transaction_type: e.target.value })}>
-              {["PURCHASE","RECEIVE","ISSUE","RESERVE","RETURN","ADJUSTMENT","DAMAGE"].map((t) => (
-                <option key={t} value={t}>{t}</option>
+              {["PURCHASE","RECEIVE","USE","ISSUE","RESERVE","RETURN","ADJUSTMENT","DAMAGE"].map((t) => (
+                <option key={t} value={t}>
+                  {t === "USE" ? "USE / इस्तेमाल किया" : t}
+                </option>
               ))}
             </Select>
             <Input type="number" value={tx.quantity} onChange={(e) => setTx({ ...tx, quantity: Number(e.target.value) })} />
@@ -74,6 +76,20 @@ export default function InventoryDetailPage() {
               }}
             >
               Save Transaction
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                await apiSend("/api/inventory/transactions", "POST", {
+                  inventory_item_id: item.id,
+                  transaction_type: "USE",
+                  quantity: 1,
+                  reason: tx.reason || "Used in robot build",
+                });
+                load();
+              }}
+            >
+              Mark 1 as Used / इस्तेमाल
             </Button>
           </div>
         </Panel>

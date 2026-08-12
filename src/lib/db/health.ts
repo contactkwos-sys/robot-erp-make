@@ -3,6 +3,10 @@ import {
   createServerSupabaseClient,
   isSupabaseConfigured,
 } from "@/lib/supabase/client";
+import {
+  checkStorageBuckets,
+  type StorageBucketsHealth,
+} from "@/lib/storage/buckets";
 
 /** Logical collections stored inside app_stores.payload (not separate SQL tables). */
 export const APP_STORE_COLLECTIONS = [
@@ -45,6 +49,7 @@ export type DatabaseHealth = {
   message: string;
   tables: TableHealth[];
   missing: string[];
+  storage_buckets?: StorageBucketsHealth;
 };
 
 function envFlags() {
@@ -154,12 +159,21 @@ export async function checkDatabaseHealth(store?: AppStore | null): Promise<Data
   }
 
   const missing = tables.filter((t) => !t.present).map((t) => t.name);
-  const ok = !setup_required && app_stores_table && missing.filter((n) => n === "app_stores").length === 0;
+  let ok = !setup_required && app_stores_table && missing.filter((n) => n === "app_stores").length === 0;
 
   if (ok && missing.length) {
     message = `app_stores OK; some payload collections missing: ${missing.join(", ")}`;
   } else if (ok) {
     message = "Database healthy — app_stores available and store collections present.";
+  }
+
+  const storage_buckets = await checkStorageBuckets();
+  if (supabase_configured && storage_buckets.setup_required) {
+    // Buckets do not block the whole app store, but health is degraded until fixed.
+    ok = false;
+    message = `${message} — ${storage_buckets.message}`;
+  } else if (ok && storage_buckets.supabase_configured && storage_buckets.empty.length) {
+    message = `${message} Storage: ${storage_buckets.message}`;
   }
 
   return {
@@ -171,5 +185,6 @@ export async function checkDatabaseHealth(store?: AppStore | null): Promise<Data
     message,
     tables,
     missing,
+    storage_buckets,
   };
 }

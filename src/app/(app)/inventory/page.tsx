@@ -148,6 +148,7 @@ export default function InventoryPage() {
                 <th>Value</th>
                 <th>Location</th>
                 <th>Status</th>
+                <th>Used?</th>
               </tr>
             </thead>
             <tbody>
@@ -166,6 +167,23 @@ export default function InventoryPage() {
                   <td>{formatCurrency(item.total_value)}</td>
                   <td>{item.storage_location || "—"}</td>
                   <td><StatusBadge status={item.status} /></td>
+                  <td>
+                    <Button
+                      disabled={Math.max(0, item.quantity - item.reserved_quantity) < 1}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        await apiSend("/api/inventory/transactions", "POST", {
+                          inventory_item_id: item.id,
+                          transaction_type: "USE",
+                          quantity: 1,
+                          reason: "Used in robot build",
+                        });
+                        load();
+                      }}
+                    >
+                      Use 1
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -370,8 +370,13 @@ create table if not exists public.engineering_checks (
   created_at timestamptz not null default now()
 );
 
--- Storage buckets (create via dashboard or storage API):
--- robot-images, product-scans, documents
+-- Storage buckets (also in migrations/20260812234000_create_storage_buckets.sql)
+insert into storage.buckets (id, name, public, file_size_limit)
+values
+  ('robot-images', 'robot-images', true, 10485760),
+  ('product-scans', 'product-scans', true, 10485760),
+  ('documents', 'documents', true, 20971520)
+on conflict (id) do update set public = excluded.public;
 
 alter table public.users enable row level security;
 alter table public.robot_projects enable row level security;
