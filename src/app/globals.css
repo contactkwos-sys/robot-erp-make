@@ -334,3 +334,105 @@ table.data th {
     border-bottom: 1px solid var(--border);
   }
 }
+
+.easy-hero {
+  position: relative;
+  margin: -0.25rem 0 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      120deg,
+      color-mix(in oklab, var(--accent-2) 18%, transparent),
+      transparent 42%
+    ),
+    linear-gradient(
+      210deg,
+      color-mix(in oklab, var(--accent) 16%, transparent),
+      transparent 50%
+    ),
+    radial-gradient(
+      900px 420px at 80% 0%,
+      color-mix(in oklab, var(--bg-muted) 80%, transparent),
+      transparent 70%
+    ),
+    var(--bg-elevated);
+}
+
+.easy-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--border) 40%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--border) 40%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.easy-hero-inner {
+  position: relative;
+  padding: 1.75rem 1.5rem 1.6rem;
+  max-width: 48rem;
+}
+
+.easy-brand {
+  margin: 0.85rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.easy-lead {
+  margin: 0.85rem 0 0;
+  font-size: 1.05rem;
+  color: var(--fg-muted);
+  max-width: 40rem;
+  line-height: 1.55;
+}
+
+.easy-meta {
+  margin: 0.85rem 0 0;
+  font-size: 0.92rem;
+}
+
+.easy-step {
+  position: relative;
+  min-height: 9.5rem;
+}
+
+.easy-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.easy-prompt {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: var(--fg-muted);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.easy-cta {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--accent) 10%, transparent),
+      transparent 60%
+    ),
+    var(--bg-elevated);
+}

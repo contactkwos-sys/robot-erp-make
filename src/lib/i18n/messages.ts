@@ -4,6 +4,7 @@ type Dict = Record<string, string>;
 
 const en: Dict = {
   "nav.dashboard": "Dashboard",
+  "nav.easy": "Easiest Robot",
   "nav.plan": "Robot Plan",
   "nav.robots": "My Robots",
   "nav.create": "Create Robot",
@@ -37,6 +38,7 @@ const en: Dict = {
 
 const hinglish: Dict = {
   "nav.dashboard": "Dashboard",
+  "nav.easy": "Easiest / आसान रोबोट",
   "nav.plan": "Robot Plan / प्लान",
   "nav.robots": "My Robots / मेरे रोबोट",
   "nav.create": "Create Robot / नया रोबोट",

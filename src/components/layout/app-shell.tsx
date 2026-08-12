@@ -23,6 +23,7 @@ import {
   X,
   Search,
   Workflow,
+  HeartHandshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/contexts/app-settings";
@@ -32,6 +33,7 @@ import type { Locale } from "@/lib/i18n/messages";
 
 const NAV = [
   { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, match: ["/","/dashboard"] as string[] },
+  { href: "/easy", labelKey: "nav.easy", icon: HeartHandshake },
   { href: "/plan", labelKey: "nav.plan", icon: Workflow },
   { href: "/robots", labelKey: "nav.robots", icon: Bot },
   { href: "/robots/create", labelKey: "nav.create", icon: PlusSquare },
@@ -207,8 +209,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <option value="hinglish">{t("lang.hinglish")}</option>
               <option value="en">{t("lang.en")}</option>
             </select>
-            <Link href="/plan">
-              <Button className="hidden lg:inline-flex">{t("nav.plan")}</Button>
+            <Link href="/easy">
+              <Button className="hidden lg:inline-flex">{t("nav.easy")}</Button>
             </Link>
             <Link href="/robots/create">
               <Button variant="primary" className="hidden md:inline-flex">

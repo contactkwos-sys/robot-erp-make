@@ -153,6 +153,11 @@ export default function PlanPage() {
             <Button variant="secondary" disabled={busy} onClick={ensureBuckets}>
               {t("plan.ensure_buckets")}
             </Button>
+            <Link href="/easy">
+              <Button variant="secondary">
+                {locale === "hinglish" ? "सबसे आसान रास्ता" : "Easiest path"}
+              </Button>
+            </Link>
             <Link href="/robots/create">
               <Button variant="primary">
                 {locale === "hinglish" ? "नया Robot बनाओ" : "Create Robot"}
@@ -161,6 +166,31 @@ export default function PlanPage() {
           </>
         }
       />
+
+      <Panel className="mb-6 animate-fade-up border-[color-mix(in_oklab,var(--accent)_40%,var(--border))]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <Badge tone="accent">
+              {locale === "hinglish" ? "Beginner shortcut" : "Beginner shortcut"}
+            </Badge>
+            <h2 className="mt-2 text-xl font-semibold" style={{ fontFamily: "var(--font-display)" }}>
+              {locale === "hinglish"
+                ? "Professional नहीं? कोई बात नहीं — Easy Robot से शुरू करो"
+                : "Not a professional? Start with the Easy Robot path"}
+            </h2>
+            <p className="mt-2 text-sm text-[var(--fg-muted)] max-w-2xl">
+              {locale === "hinglish"
+                ? "Gemini + ChatGPT + Claude के ready prompts, छोटी shopping list, और 6 simple steps। Personal hobby के लिए सबसे आसान।"
+                : "Ready prompts for Gemini, ChatGPT, and Claude, a short shopping list, and 6 simple steps — easiest for personal hobby builds."}
+            </p>
+          </div>
+          <Link href="/easy">
+            <Button variant="primary">
+              {locale === "hinglish" ? "Easy Start खोलो" : "Open Easy Start"}
+            </Button>
+          </Link>
+        </div>
+      </Panel>
 
       <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Panel className="animate-fade-up">

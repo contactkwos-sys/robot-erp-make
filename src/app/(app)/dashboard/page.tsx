@@ -30,9 +30,16 @@ import {
   Cable,
   Calculator,
   Workflow,
+  HeartHandshake,
 } from "lucide-react";
 
 const MODULES = [
+  {
+    href: "/easy",
+    title: "Easiest Robot",
+    body: "Beginner hobby path with Gemini / ChatGPT / Claude prompts.",
+    icon: HeartHandshake,
+  },
   {
     href: "/plan",
     title: "Robot Plan Chart",
