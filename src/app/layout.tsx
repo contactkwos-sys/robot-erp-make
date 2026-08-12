@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppProviders } from "@/contexts/app-settings";
+import { LocaleProvider } from "@/contexts/locale";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          <LocaleProvider>{children}</LocaleProvider>
+        </AppProviders>
       </body>
     </html>
   );

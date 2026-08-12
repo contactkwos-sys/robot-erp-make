@@ -22,31 +22,36 @@ import {
   Menu,
   X,
   Search,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/contexts/app-settings";
+import { useLocale } from "@/contexts/locale";
 import { Button, Input } from "@/components/ui/primitives";
+import type { Locale } from "@/lib/i18n/messages";
 
 const NAV = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, match: ["/","/dashboard"] as string[] },
-  { href: "/robots", label: "My Robots", icon: Bot },
-  { href: "/robots/create", label: "Create Robot", icon: PlusSquare },
-  { href: "/analysis", label: "Robot Analysis", icon: ScanSearch },
-  { href: "/bom", label: "BOM / Components", icon: Boxes },
-  { href: "/inventory", label: "Inventory", icon: Warehouse },
-  { href: "/purchases", label: "Purchase Required", icon: ShoppingCart },
-  { href: "/scanner", label: "Product Scanner", icon: Camera },
-  { href: "/comparison", label: "Product Comparison", icon: GitCompare },
-  { href: "/assembly", label: "Assembly Guide", icon: Wrench },
-  { href: "/wiring", label: "Wiring Guide", icon: Cable },
-  { href: "/costing", label: "Costing", icon: Calculator },
-  { href: "/recommendations", label: "AI Recommendations", icon: Sparkles },
-  { href: "/documents", label: "Documents", icon: FileText },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, match: ["/","/dashboard"] as string[] },
+  { href: "/plan", labelKey: "nav.plan", icon: Workflow },
+  { href: "/robots", labelKey: "nav.robots", icon: Bot },
+  { href: "/robots/create", labelKey: "nav.create", icon: PlusSquare },
+  { href: "/analysis", labelKey: "nav.analysis", icon: ScanSearch },
+  { href: "/bom", labelKey: "nav.bom", icon: Boxes },
+  { href: "/inventory", labelKey: "nav.inventory", icon: Warehouse },
+  { href: "/purchases", labelKey: "nav.purchases", icon: ShoppingCart },
+  { href: "/scanner", labelKey: "nav.scanner", icon: Camera },
+  { href: "/comparison", labelKey: "nav.comparison", icon: GitCompare },
+  { href: "/assembly", labelKey: "nav.assembly", icon: Wrench },
+  { href: "/wiring", labelKey: "nav.wiring", icon: Cable },
+  { href: "/costing", labelKey: "nav.costing", icon: Calculator },
+  { href: "/recommendations", labelKey: "nav.recommendations", icon: Sparkles },
+  { href: "/documents", labelKey: "nav.documents", icon: FileText },
+  { href: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { t } = useLocale();
   return (
     <nav className="space-y-1 px-3 pb-6">
       {NAV.map((item) => {
@@ -68,7 +73,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <Icon size={16} />
-            <span>{item.label}</span>
+            <span>{t(item.labelKey)}</span>
           </Link>
         );
       })}
@@ -82,6 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [results, setResults] = useState<Record<string, unknown[]> | null>(null);
   const [demoMode, setDemoMode] = useState(true);
   const { beginnerMode, setBeginnerMode } = useAppSettings();
+  const { locale, setLocale, t } = useLocale();
 
   useEffect(() => {
     fetch("/api/settings")
@@ -192,6 +198,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               />
               Beginner Mode
             </label>
+            <select
+              className="select max-w-[9.5rem] text-xs py-2"
+              value={locale}
+              onChange={(e) => setLocale(e.target.value as Locale)}
+              aria-label="Language"
+            >
+              <option value="hinglish">{t("lang.hinglish")}</option>
+              <option value="en">{t("lang.en")}</option>
+            </select>
+            <Link href="/plan">
+              <Button className="hidden lg:inline-flex">{t("nav.plan")}</Button>
+            </Link>
             <Link href="/robots/create">
               <Button variant="primary" className="hidden md:inline-flex">
                 New Robot

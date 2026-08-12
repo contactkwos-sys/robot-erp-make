@@ -230,3 +230,107 @@ table.data th {
 .animate-pulse-soft {
   animation: pulse-soft 1.6s ease infinite;
 }
+
+.plan-hero {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--accent-2) 10%, transparent),
+      transparent 45%
+    ),
+    var(--bg-elevated);
+}
+
+.plan-hero-visual {
+  min-height: 220px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(
+      500px 220px at 30% 20%,
+      color-mix(in oklab, var(--accent) 18%, transparent),
+      transparent 60%
+    ),
+    var(--bg-muted);
+}
+
+.plan-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.plan-flow-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.plan-node {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--bg-elevated) 96%, transparent),
+      color-mix(in oklab, var(--bg-muted) 35%, var(--bg-elevated))
+    );
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  position: relative;
+}
+
+.plan-node:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+.plan-node.is-done {
+  border-color: color-mix(in oklab, var(--success) 45%, var(--border));
+}
+
+.plan-node.is-todo {
+  border-style: dashed;
+}
+
+.plan-node-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.55rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--accent-2) 14%, var(--bg-muted));
+  color: var(--accent-2);
+  flex-shrink: 0;
+}
+
+.plan-step-num {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+
+.plan-connector {
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0;
+  color: color-mix(in oklab, var(--accent) 70%, var(--fg-muted));
+  animation: pulse-soft 2.2s ease infinite;
+}
+
+@media (max-width: 640px) {
+  .plan-hero-visual {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}

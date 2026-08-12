@@ -29,9 +29,16 @@ import {
   Wrench,
   Cable,
   Calculator,
+  Workflow,
 } from "lucide-react";
 
 const MODULES = [
+  {
+    href: "/plan",
+    title: "Robot Plan Chart",
+    body: "Hinglish flowchart: idea → stock → print → code → finish.",
+    icon: Workflow,
+  },
   {
     href: "/robots",
     title: "My Robots",

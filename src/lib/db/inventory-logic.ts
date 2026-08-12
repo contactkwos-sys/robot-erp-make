@@ -11,7 +11,7 @@ import type {
 import { deriveInventoryStatus, progressPercent } from "@/lib/utils";
 import { getDemoUserId, newId, nowIso, readStore, updateStore } from "@/lib/db/store";
 
-function availableQty(item: InventoryItem) {
+export function availableQty(item: InventoryItem) {
   return Math.max(0, item.quantity - item.reserved_quantity);
 }
 
@@ -230,6 +230,7 @@ export async function applyInventoryTransaction(input: {
         item.quantity += qty;
         break;
       case "ISSUE":
+      case "USE":
       case "DAMAGE":
         if (availableQty(item) < qty) throw new Error("Insufficient available stock");
         item.quantity -= qty;
@@ -246,7 +247,18 @@ export async function applyInventoryTransaction(input: {
     }
 
     item.total_value = item.quantity * item.unit_cost;
-    item.status = deriveInventoryStatus(item.quantity, item.reserved_quantity, item.minimum_stock, item.status);
+    if (input.transaction_type === "USE" && item.quantity === 0) {
+      item.status = "USED";
+    } else if (input.transaction_type === "DAMAGE") {
+      item.status = "DAMAGED";
+    } else {
+      item.status = deriveInventoryStatus(
+        item.quantity,
+        item.reserved_quantity,
+        item.minimum_stock,
+        item.status
+      );
+    }
     item.updated_at = nowIso();
 
     store.inventory_transactions.push({

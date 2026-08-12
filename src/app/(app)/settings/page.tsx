@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { apiGet, apiSend } from "@/lib/client-api";
 import { useAppSettings } from "@/contexts/app-settings";
+import { useLocale } from "@/contexts/locale";
+import type { Locale } from "@/lib/i18n/messages";
 import {
   Button,
   Input,
@@ -14,27 +16,40 @@ import {
 
 export default function SettingsPage() {
   const { beginnerMode, setBeginnerMode, theme, setTheme, refresh } = useAppSettings();
+  const { locale, setLocale, t } = useLocale();
   const [settings, setSettings] = useState<any>(null);
   const [name, setName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [buckets, setBuckets] = useState<any>(null);
 
   useEffect(() => {
     apiGet("/api/settings").then((s: any) => {
       setSettings(s);
       setName(s.user?.full_name || "");
     });
+    fetch("/api/storage/buckets")
+      .then((r) => r.json())
+      .then((json) => setBuckets(json?.data || null))
+      .catch(() => setBuckets(null));
   }, []);
 
   if (!settings) return <LoadingState />;
 
   return (
     <div>
-      <PageHeader title="Settings" subtitle="Beginner mode, theme, and integration status." />
+      <PageHeader title="Settings" subtitle="Beginner mode, language, theme, and integration status." />
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel className="space-y-4">
           <label className="flex items-center gap-3 text-sm">
             <input type="checkbox" checked={beginnerMode} onChange={(e) => setBeginnerMode(e.target.checked)} />
             Beginner Mode — explain every component in simple language
+          </label>
+          <label className="block space-y-2 text-sm">
+            <span>Language / भाषा</span>
+            <Select value={locale} onChange={(e) => setLocale(e.target.value as Locale)}>
+              <option value="hinglish">{t("lang.hinglish")}</option>
+              <option value="en">{t("lang.en")}</option>
+            </Select>
           </label>
           <label className="block space-y-2 text-sm">
             <span>Theme</span>
@@ -93,6 +108,7 @@ export default function SettingsPage() {
                 const res = await fetch("/api/health");
                 const json = await res.json();
                 const db = json?.data?.database;
+                setBuckets(db?.storage_buckets || null);
                 setMessage(
                   db?.message ||
                     json?.data?.warning ||
@@ -103,6 +119,17 @@ export default function SettingsPage() {
               Check Database
             </Button>
             <Button
+              variant="secondary"
+              onClick={async () => {
+                const res = await fetch("/api/storage/buckets", { method: "POST" });
+                const json = await res.json();
+                setBuckets(json?.data || null);
+                setMessage(json?.data?.message || "Bucket ensure completed.");
+              }}
+            >
+              Ensure Storage Buckets
+            </Button>
+            <Button
               onClick={async () => {
                 await fetch("/api/seed", { method: "POST" });
                 setMessage("Demo data reset.");
@@ -111,6 +138,18 @@ export default function SettingsPage() {
               Reset Demo Data
             </Button>
           </div>
+          {buckets ? (
+            <div className="mt-4 rounded-md border border-[var(--border)] p-3 space-y-1">
+              <div className="font-semibold">Storage buckets</div>
+              <p className="text-[var(--fg-muted)]">{buckets.message}</p>
+              {(buckets.buckets || []).map((b: any) => (
+                <div key={b.name} className="font-mono text-xs">
+                  {b.name}: {b.exists ? "exists" : "MISSING"}
+                  {b.empty === true ? " · EMPTY" : b.empty === false ? " · has files" : ""}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </Panel>
       </div>
     </div>

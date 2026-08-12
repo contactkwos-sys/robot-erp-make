@@ -31,7 +31,11 @@ grant select, insert, update, delete on table public.app_stores to authenticated
 grant select on table public.app_stores to anon;
 notify pgrst, 'reload schema';
 
--- Then in Supabase Dashboard → Storage, create PUBLIC buckets:
---   robot-images
---   product-scans
---   documents
+-- Public Storage buckets (fixes "bucket is empty / missing" upload failures)
+-- Prefer full file: supabase/migrations/20260812234000_create_storage_buckets.sql
+insert into storage.buckets (id, name, public, file_size_limit)
+values
+  ('robot-images', 'robot-images', true, 10485760),
+  ('product-scans', 'product-scans', true, 10485760),
+  ('documents', 'documents', true, 20971520)
+on conflict (id) do update set public = excluded.public;

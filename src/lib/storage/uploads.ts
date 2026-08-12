@@ -5,6 +5,7 @@ import {
   getDataBackend,
   isServerlessRuntime,
 } from "@/lib/supabase/client";
+import { ensureStorageBuckets } from "@/lib/storage/buckets";
 
 const FOLDER_TO_BUCKET: Record<string, string> = {
   robots: "robot-images",
@@ -39,12 +40,38 @@ async function uploadToSupabase(
   const bucket = FOLDER_TO_BUCKET[folder] || "documents";
   const objectPath = `${folder}/${safeFileName(file.name)}`;
 
+  // Auto-create missing buckets so "bucket is empty / missing" does not block uploads.
+  const buckets = await ensureStorageBuckets();
+  if (buckets.missing.includes(bucket)) {
+    throw new Error(
+      `Storage bucket "${bucket}" is missing. Run supabase/migrations/20260812234000_create_storage_buckets.sql or POST /api/storage/buckets.`
+    );
+  }
+
   const { error } = await client.storage.from(bucket).upload(objectPath, bytes, {
     contentType: file.type || "application/octet-stream",
     upsert: false,
   });
 
   if (error) {
+    // One retry after ensuring buckets (handles race / first-deploy empty project)
+    if (/not found|does not exist|bucket/i.test(error.message)) {
+      await ensureStorageBuckets();
+      const retry = await client.storage.from(bucket).upload(objectPath, bytes, {
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
+      if (!retry.error) {
+        const { data } = client.storage.from(bucket).getPublicUrl(objectPath);
+        return {
+          file_name: file.name,
+          file_path: data.publicUrl,
+          file_type: file.type,
+          file_size: file.size,
+          storage: "supabase",
+        };
+      }
+    }
     throw new Error(
       `Supabase Storage upload failed (${error.message}). Create public buckets: robot-images, product-scans, documents.`
     );

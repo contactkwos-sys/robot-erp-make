@@ -43,6 +43,7 @@ export type TransactionType =
   | "PURCHASE"
   | "RECEIVE"
   | "ISSUE"
+  | "USE"
   | "RESERVE"
   | "RETURN"
   | "ADJUSTMENT"

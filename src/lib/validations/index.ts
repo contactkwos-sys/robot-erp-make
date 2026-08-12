@@ -71,6 +71,7 @@ export const transactionSchema = z.object({
     "PURCHASE",
     "RECEIVE",
     "ISSUE",
+    "USE",
     "RESERVE",
     "RETURN",
     "ADJUSTMENT",
