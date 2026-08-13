@@ -406,6 +406,88 @@ export interface EngineeringCheck {
   created_at: string;
 }
 
+export type PrintPartStatus =
+  | "NEEDED"
+  | "FILE_READY"
+  | "QUEUED"
+  | "SENT"
+  | "PRINTING"
+  | "DONE"
+  | "FAILED";
+
+export type PrintTransferMethod =
+  | "BAMBU_HANDY"
+  | "ANYDESK"
+  | "ULTRAVIEWER"
+  | "LAN"
+  | "USB";
+
+export interface PrinterProfile {
+  id: string;
+  user_id: string;
+  name: string;
+  brand: string;
+  model: string;
+  bambu_handy_active: boolean;
+  bambu_handy_notes: string;
+  lan_ip: string;
+  access_code: string;
+  serial: string;
+  anydesk_id: string;
+  ultraviewer_id: string;
+  preferred_transfer: PrintTransferMethod;
+  printer_pc_path: string;
+  status: "READY" | "BUSY" | "OFFLINE" | "UNKNOWN";
+  last_checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PrintablePart {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  part_name: string;
+  part_name_hi: string;
+  purpose: string;
+  purpose_hi: string;
+  material: string;
+  color: string;
+  quantity: number;
+  estimated_minutes: number;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  file_size: number;
+  status: PrintPartStatus;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PrintJob {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  printable_part_id: string | null;
+  printer_id: string | null;
+  title: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  material: string;
+  color: string;
+  quantity: number;
+  transfer_method: PrintTransferMethod;
+  command_pack: Record<string, unknown>;
+  status: PrintPartStatus;
+  transfer_notes: string;
+  created_at: string;
+  updated_at: string;
+  sent_at: string | null;
+  completed_at: string | null;
+}
+
 export interface AppStore {
   users: User[];
   robot_projects: RobotProject[];
@@ -426,6 +508,9 @@ export interface AppStore {
   project_costs: ProjectCost[];
   project_notes: ProjectNote[];
   engineering_checks: EngineeringCheck[];
+  printer_profiles: PrinterProfile[];
+  printable_parts: PrintablePart[];
+  print_jobs: PrintJob[];
 }
 
 export interface DashboardStats {

@@ -44,6 +44,21 @@ function emptyStore(): AppStore {
     project_costs: [],
     project_notes: [],
     engineering_checks: [],
+    printer_profiles: [],
+    printable_parts: [],
+    print_jobs: [],
+  };
+}
+
+/** Ensure older saved stores gain new collections without crashing. */
+export function normalizeStore(store: AppStore): AppStore {
+  const base = emptyStore();
+  return {
+    ...base,
+    ...store,
+    printer_profiles: Array.isArray(store.printer_profiles) ? store.printer_profiles : [],
+    printable_parts: Array.isArray(store.printable_parts) ? store.printable_parts : [],
+    print_jobs: Array.isArray(store.print_jobs) ? store.print_jobs : [],
   };
 }
 
@@ -71,7 +86,7 @@ async function tryReadFile(filePath: string): Promise<AppStore | null> {
   try {
     const raw = await fs.readFile(filePath, "utf8");
     if (!raw.trim()) return null;
-    return JSON.parse(raw) as AppStore;
+    return normalizeStore(JSON.parse(raw) as AppStore);
   } catch {
     return null;
   }
@@ -190,7 +205,7 @@ async function readFromSupabase(): Promise<AppStore> {
 
   databaseSetupRequired = false;
   lastStoreWarning = null;
-  return data.payload as AppStore;
+  return normalizeStore(data.payload as AppStore);
 }
 
 async function writeToSupabase(store: AppStore): Promise<void> {
@@ -327,16 +342,17 @@ async function persist(store: AppStore, backend: ResolvedBackend) {
 
 export async function readStore(): Promise<AppStore> {
   const { store } = await ensureStore();
-  return store;
+  return normalizeStore(store);
 }
 
 export async function updateStore(
   mutator: (store: AppStore) => void | Promise<void>
 ): Promise<AppStore> {
   const { store, backend } = await ensureStore();
-  await mutator(store);
-  await persist(store, backend);
-  return store;
+  const normalized = normalizeStore(store);
+  await mutator(normalized);
+  await persist(normalized, backend);
+  return normalized;
 }
 
 export async function resetStore(): Promise<AppStore> {

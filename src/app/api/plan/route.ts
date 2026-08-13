@@ -72,13 +72,12 @@ export async function GET() {
       },
       {
         id: "print",
-        done: Boolean(
-          active &&
-            ["MECHANICAL_ASSEMBLY", "ELECTRONICS", "WIRING", "PROGRAMMING", "TESTING", "COMPLETED"].includes(
-              active.progress
-            )
+        done: store.print_jobs.some(
+          (j) =>
+            j.user_id === userId &&
+            (j.status === "DONE" || j.status === "PRINTING" || j.status === "SENT")
         ),
-        href: active ? `/assembly/${active.id}` : "/assembly",
+        href: "/print",
       },
       {
         id: "code",

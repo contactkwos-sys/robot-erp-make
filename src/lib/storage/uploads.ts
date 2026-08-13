@@ -11,6 +11,7 @@ const FOLDER_TO_BUCKET: Record<string, string> = {
   robots: "robot-images",
   scans: "product-scans",
   documents: "documents",
+  prints: "documents",
 };
 
 export type UploadResult = {
@@ -124,7 +125,7 @@ function uploadAsDataUrl(file: File, bytes: Buffer): UploadResult {
  * 3) Data URL fallback (serverless without Supabase — demo still works)
  */
 export async function saveUpload(folder: string, file: File): Promise<UploadResult> {
-  const allowed = new Set(["robots", "scans", "documents"]);
+  const allowed = new Set(["robots", "scans", "documents", "prints"]);
   if (!allowed.has(folder)) {
     throw new Error("Invalid upload folder");
   }

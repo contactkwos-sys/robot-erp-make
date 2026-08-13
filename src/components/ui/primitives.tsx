@@ -205,13 +205,33 @@ export function ProgressBar({ value }: { value: number }) {
 
 export function StatusBadge({ status }: { status: string }) {
   const tone =
-    status.includes("AVAILABLE") || status === "RECEIVED" || status === "PASS" || status === "COMPLETED"
+    status.includes("AVAILABLE") ||
+    status === "RECEIVED" ||
+    status === "PASS" ||
+    status === "COMPLETED" ||
+    status === "DONE" ||
+    status === "FILE_READY"
       ? "success"
-      : status.includes("REQUIRED") || status.includes("LOW") || status.includes("WARNING") || status === "ORDERED"
+      : status.includes("REQUIRED") ||
+          status.includes("LOW") ||
+          status.includes("WARNING") ||
+          status === "ORDERED" ||
+          status === "NEEDED" ||
+          status === "QUEUED" ||
+          status === "PRINTING"
         ? "warning"
-        : status.includes("OUT") || status === "FAIL" || status === "CANCELLED" || status === "DAMAGED"
+        : status.includes("OUT") ||
+            status === "FAIL" ||
+            status === "FAILED" ||
+            status === "CANCELLED" ||
+            status === "DAMAGED"
           ? "danger"
-          : status.includes("VERIFICATION") || status === "RESERVED"
+          : status.includes("VERIFICATION") ||
+              status === "RESERVED" ||
+              status === "SENT" ||
+              status === "BAMBU_HANDY" ||
+              status === "ANYDESK" ||
+              status === "ULTRAVIEWER"
             ? "info"
             : "neutral";
   return <Badge tone={tone as "success"}>{status.replaceAll("_", " ")}</Badge>;

@@ -27,6 +27,9 @@ export const APP_STORE_COLLECTIONS = [
   "documents",
   "ai_recommendations",
   "project_costs",
+  "printer_profiles",
+  "printable_parts",
+  "print_jobs",
 ] as const;
 
 export type AppStoreCollection = (typeof APP_STORE_COLLECTIONS)[number];

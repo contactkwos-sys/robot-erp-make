@@ -94,7 +94,14 @@ const DEFAULT_ALLOWED = [
   "image/gif",
   "image/svg+xml",
   "application/pdf",
+  "model/stl",
+  "model/3mf",
+  "application/sla",
+  "application/vnd.ms-pki.stl",
+  "application/octet-stream",
 ];
+
+const PRINT_EXTENSIONS = [".stl", ".3mf", ".obj", ".gcode", ".gcode.3mf"];
 
 export function validateUpload(file: File) {
   const maxMb = Number(process.env.MAX_UPLOAD_SIZE_MB || 10);
@@ -102,7 +109,13 @@ export function validateUpload(file: File) {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  if (!allowed.includes(file.type) && !file.type.startsWith("image/")) {
+  const lower = file.name.toLowerCase();
+  const isPrintFile = PRINT_EXTENSIONS.some((ext) => lower.endsWith(ext));
+  if (
+    !allowed.includes(file.type) &&
+    !file.type.startsWith("image/") &&
+    !isPrintFile
+  ) {
     return { ok: false as const, error: `File type ${file.type || "unknown"} is not allowed.` };
   }
   if (file.size > maxMb * 1024 * 1024) {

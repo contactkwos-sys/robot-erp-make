@@ -24,6 +24,7 @@ import {
   Search,
   Workflow,
   HeartHandshake,
+  Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSettings } from "@/contexts/app-settings";
@@ -35,6 +36,7 @@ const NAV = [
   { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, match: ["/","/dashboard"] as string[] },
   { href: "/easy", labelKey: "nav.easy", icon: HeartHandshake },
   { href: "/plan", labelKey: "nav.plan", icon: Workflow },
+  { href: "/print", labelKey: "nav.print", icon: Printer },
   { href: "/robots", labelKey: "nav.robots", icon: Bot },
   { href: "/robots/create", labelKey: "nav.create", icon: PlusSquare },
   { href: "/analysis", labelKey: "nav.analysis", icon: ScanSearch },

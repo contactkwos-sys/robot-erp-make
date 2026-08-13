@@ -17,6 +17,7 @@ A working full-stack industrial robotics planning application built with Next.js
 - Project costing and progress tracking
 - Demo project: **4-Wheel AI Inspection Robot**
 - **Easiest Robot** beginner path with Gemini / ChatGPT / Claude copy-paste prompts
+- **3D Print Center + Bambu Handy**: queue robot parts, upload STL/3MF, send via AnyDesk / UltraViewer / Handy
 - **Robot Plan chart flow** (Hinglish): idea → image → stock → missing → 3D print → code → finish
 - Hindi + English language toggle
 - Mark inventory items as **USED** (इस्तेमाल)

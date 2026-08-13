@@ -31,6 +31,7 @@ import {
   Calculator,
   Workflow,
   HeartHandshake,
+  Printer,
 } from "lucide-react";
 
 const MODULES = [
@@ -39,6 +40,12 @@ const MODULES = [
     title: "Easiest Robot",
     body: "Beginner hobby path with Gemini / ChatGPT / Claude prompts.",
     icon: HeartHandshake,
+  },
+  {
+    href: "/print",
+    title: "3D Print / Bambu Handy",
+    body: "Send robot parts to printer via AnyDesk, UltraViewer, or Handy.",
+    icon: Printer,
   },
   {
     href: "/plan",

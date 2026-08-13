@@ -82,6 +82,11 @@ export default function EasyRobotPage() {
             <Link href="/plan">
               <Button>{hi ? "पूरा Chart Flow" : "Full chart flow"}</Button>
             </Link>
+            <Link href="/print">
+              <Button variant="secondary">
+                {hi ? "Bambu Handy 3D Print" : "Bambu Handy 3D Print"}
+              </Button>
+            </Link>
             <Link href="/scanner">
               <Button variant="secondary">
                 {hi ? "Amazon screenshot स्कैन" : "Scan Amazon screenshot"}
