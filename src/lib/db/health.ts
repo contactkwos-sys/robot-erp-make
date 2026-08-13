@@ -30,6 +30,7 @@ export const APP_STORE_COLLECTIONS = [
   "printer_profiles",
   "printable_parts",
   "print_jobs",
+  "robot_build_plans",
 ] as const;
 
 export type AppStoreCollection = (typeof APP_STORE_COLLECTIONS)[number];

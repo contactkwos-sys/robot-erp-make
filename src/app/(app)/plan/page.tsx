@@ -16,6 +16,7 @@ import {
   ProgressBar,
   StatusBadge,
 } from "@/components/ui/primitives";
+import { TrendIdeaPlanner } from "@/components/plan/trend-idea-planner";
 import {
   CheckCircle2,
   Circle,
@@ -31,6 +32,7 @@ import {
   ImageIcon,
   Cog,
   ScanSearch,
+  TrendingUp,
 } from "lucide-react";
 
 type PlanData = {
@@ -81,6 +83,7 @@ type PlanData = {
 };
 
 const STEP_ICONS: Record<string, typeof Lightbulb> = {
+  idh: TrendingUp,
   idea: Lightbulb,
   image: ImageIcon,
   purpose: Cog,
@@ -191,6 +194,10 @@ export default function PlanPage() {
           </Link>
         </div>
       </Panel>
+
+      <div id="idh-trends">
+        <TrendIdeaPlanner />
+      </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Panel className="animate-fade-up">

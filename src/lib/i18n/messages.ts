@@ -80,6 +80,17 @@ export function t(locale: Locale, key: string): string {
 
 export const PLAN_STEPS = [
   {
+    id: "idh",
+    en: {
+      title: "Update Idea (IDH) + Market Trend",
+      body: "Pick a latest-trend plan, understand it, edit with your idea, then lock it.",
+    },
+    hinglish: {
+      title: "Idea Update (IDH) + Market Trend",
+      body: "Latest trend plan चुनो, समझो, अपना idea edit करो, फिर उसी से robot बनाओ।",
+    },
+  },
+  {
     id: "idea",
     en: { title: "Robot Idea", body: "Name the robot and decide what it should do." },
     hinglish: {

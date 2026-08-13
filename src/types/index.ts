@@ -98,6 +98,38 @@ export interface RobotProject {
   cover_image_url: string | null;
   is_demo: boolean;
   approved_at: string | null;
+  build_plan_id?: string | null;
+  trend_id?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Selected / edited market-trend or custom idea plan (IDH = Idea update). */
+export interface RobotBuildPlan {
+  id: string;
+  user_id: string;
+  trend_id: string;
+  title: string;
+  tagline: string;
+  how_made: string;
+  market_why: string;
+  sell_use: string;
+  own_idea: string;
+  name: string;
+  purpose: string;
+  description: string;
+  target_load: string;
+  dimensions: string;
+  movement: string;
+  environment: string;
+  power_preference: string;
+  demand: "HOT" | "RISING" | "STABLE";
+  sell_score: number;
+  difficulty: "BEGINNER" | "INTERMEDIATE" | "PRO";
+  keywords: string[];
+  status: "DRAFT" | "SELECTED" | "EDITING" | "LOCKED" | "BUILDING";
+  selected: boolean;
+  project_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -511,6 +543,7 @@ export interface AppStore {
   printer_profiles: PrinterProfile[];
   printable_parts: PrintablePart[];
   print_jobs: PrintJob[];
+  robot_build_plans: RobotBuildPlan[];
 }
 
 export interface DashboardStats {

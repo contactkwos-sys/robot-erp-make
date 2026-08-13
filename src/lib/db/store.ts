@@ -47,6 +47,7 @@ function emptyStore(): AppStore {
     printer_profiles: [],
     printable_parts: [],
     print_jobs: [],
+    robot_build_plans: [],
   };
 }
 
@@ -59,6 +60,9 @@ export function normalizeStore(store: AppStore): AppStore {
     printer_profiles: Array.isArray(store.printer_profiles) ? store.printer_profiles : [],
     printable_parts: Array.isArray(store.printable_parts) ? store.printable_parts : [],
     print_jobs: Array.isArray(store.print_jobs) ? store.print_jobs : [],
+    robot_build_plans: Array.isArray(store.robot_build_plans)
+      ? store.robot_build_plans
+      : [],
   };
 }
 

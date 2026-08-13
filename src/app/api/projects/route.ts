@@ -42,6 +42,8 @@ export async function POST(request: Request) {
         cover_image_url: (body.cover_image_url as string) || null,
         is_demo: false,
         approved_at: null,
+        build_plan_id: null,
+        trend_id: null,
         created_at: now,
         updated_at: now,
       });

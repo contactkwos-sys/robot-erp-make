@@ -94,6 +94,8 @@ export function createDemoStore(): AppStore {
     cover_image_url: "/demo/inspection-robot.svg",
     is_demo: true,
     approved_at: null,
+    build_plan_id: null,
+    trend_id: null,
     created_at: NOW,
     updated_at: NOW,
   };
@@ -1508,5 +1510,6 @@ export function createDemoStore(): AppStore {
       },
     ],
     print_jobs: [],
+    robot_build_plans: [],
   };
 }

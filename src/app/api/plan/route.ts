@@ -32,7 +32,22 @@ export async function GET() {
 
     const buckets = await checkStorageBuckets();
 
+    const selectedPlan =
+      store.robot_build_plans.find((p) => p.user_id === userId && p.selected) ||
+      store.robot_build_plans.find((p) => p.user_id === userId) ||
+      null;
+
     const steps = [
+      {
+        id: "idh",
+        done: Boolean(
+          selectedPlan &&
+            (selectedPlan.status === "SELECTED" ||
+              selectedPlan.status === "BUILDING" ||
+              selectedPlan.status === "EDITING")
+        ),
+        href: "/plan#idh-trends",
+      },
       {
         id: "idea",
         done: projects.length > 0,
@@ -140,6 +155,19 @@ export async function GET() {
       },
       steps,
       projects_count: projects.length,
+      selected_build_plan: selectedPlan
+        ? {
+            id: selectedPlan.id,
+            title: selectedPlan.title,
+            name: selectedPlan.name,
+            trend_id: selectedPlan.trend_id,
+            sell_score: selectedPlan.sell_score,
+            demand: selectedPlan.demand,
+            status: selectedPlan.status,
+            own_idea: selectedPlan.own_idea,
+            sell_use: selectedPlan.sell_use,
+          }
+        : null,
     });
   } catch (e) {
     return fail(e instanceof Error ? e.message : "Plan load failed", 500);

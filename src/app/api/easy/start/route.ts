@@ -27,6 +27,8 @@ export async function POST() {
         cover_image_url: "/demo/inspection-robot.svg",
         is_demo: false,
         approved_at: null,
+        build_plan_id: null,
+        trend_id: "trend-edu-stem-kit",
         created_at: ts,
         updated_at: ts,
       });
